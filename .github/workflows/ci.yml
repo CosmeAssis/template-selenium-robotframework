@@ -18,7 +18,9 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.9
-          cache: 'pip'
+
+      - name: Create Cache Directory (Fix)
+        run: mkdir -p /home/runner/.cache/pip  # Garante que o diretório exista
 
       - name: Install Chrome & ChromeDriver
         run: |
@@ -35,10 +37,14 @@ jobs:
       
       - name: Run Tests
         run: robot --outputdir reports --exitonfailure tests/login_test.robot || true
+      
+      - name: Generate Enhanced Report
+        run: rebot --loglevel DEBUG --reporttitle "Relatório Personalizado" --outputdir reports reports/output.xml
+      
 
       - name: Upload Test Report
         if: always()
-        uses: actions/upload-artifact@v4  # Atualizado para v4
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: reports
