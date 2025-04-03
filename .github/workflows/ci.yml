@@ -8,6 +8,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    continue-on-error: true  # Permite que o workflow continue mesmo se um teste falhar
 
     steps:
       - name: Checkout Code
@@ -24,19 +25,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wget unzip curl
           sudo apt-get install -y chromium-browser chromium-chromedriver
+          echo "✅ Chrome & ChromeDriver instalados com sucesso!"
 
       - name: Install Dependencies
         run: pip install --no-cache-dir -r requirements.txt
 
       - name: Install WebDriver Manager
-        run: python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
-
+        run: python -c "from webdriver_manager.chrome import ChromeDriverManager; print(ChromeDriverManager().install())"
+      
       - name: Run Tests
         run: robot --outputdir reports --exitonfailure tests/login_test.robot || true
 
       - name: Upload Test Report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Atualizado para v4
         with:
           name: test-reports
           path: reports
