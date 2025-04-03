@@ -52,7 +52,7 @@ pip install -r requirements.txt
 ### 2️⃣ Executar os Testes Localmente
 
 ```sh
-robot --outputdir reports tests/login_test.robot
+rebot --loglevel DEBUG --outputdir reports --reporttitle "Relatório Personalizado" output.xml
 ```
 
 ### 3️⃣ Executar os Testes com Docker
