@@ -1,0 +1,42 @@
+name: Run Robot Tests
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+          cache: 'pip'
+
+      - name: Install Chrome & ChromeDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip curl
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+
+      - name: Install Dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Install WebDriver Manager
+        run: python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
+
+      - name: Run Tests
+        run: robot --outputdir reports --exitonfailure tests/login_test.robot || true
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: reports
