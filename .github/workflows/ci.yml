@@ -38,14 +38,13 @@ jobs:
           allure generate allure-results -o reports/allure-report --clean
           ls -l reports/allure-report
 
-      - name: 📁 Mover relatório para a pasta docs/ (GitHub Pages)
-        run: |
-          rm -rf docs
-          mkdir -p docs
-          cp -r reports/allure-report/* docs/
-
-      - name: 📎 Salvar Relatório Allure como Artefato
+      - name: 📎 Salvar Relatório como Artefato
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: reports/allure-report
+
+      - name: 🗂️ Copiar relatório para pasta docs (GitHub Pages)
+        run: |
+          mkdir -p docs
+          cp -r reports/allure-report/* docs/
