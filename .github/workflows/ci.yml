@@ -35,19 +35,13 @@ jobs:
 
       - name: 🧪 Gerar Relatório Allure na pasta docs/
         run: |
-          rm -rf docs  # Limpa pasta anterior se houver
+          rm -rf docs
           allure generate allure-results -o docs --clean
-
-      - name: 🚫 Desabilitar Jekyll
-        run: |
           touch docs/.nojekyll
 
-      - name: 🚀 Commit e Push do Relatório para GitHub Pages
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs
-          git commit -m "📄 Atualizando relatório Allure para GitHub Pages"
-          git push origin HEAD:master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🚀 Deploy para a branch gh-pages (GitHub Pages)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages
