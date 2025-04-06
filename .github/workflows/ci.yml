@@ -1,8 +1,12 @@
-name: Run Tests and Deploy Allure Report
+name: 🤖 CI Robot Framework - Selenium
 
 on:
   push:
-    branches: [main]
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   test-and-deploy:
