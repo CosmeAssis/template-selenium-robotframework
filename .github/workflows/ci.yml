@@ -38,18 +38,14 @@ jobs:
           allure generate allure-results -o reports/allure-report --clean
           ls -l reports/allure-report
 
+      - name: 📁 Mover relatório para a pasta docs/ (GitHub Pages)
+        run: |
+          rm -rf docs
+          mkdir -p docs
+          cp -r reports/allure-report/* docs/
+
       - name: 📎 Salvar Relatório Allure como Artefato
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: reports/allure-report
-
-      - name: 🚀 Publicar Relatório no Netlify
-        uses: nwtgck/actions-netlify@v2.0
-        with:
-          publish-dir: ./reports/allure-report
-          production-deploy: true
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-  
