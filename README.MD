@@ -1,109 +1,97 @@
-# Template Selenium RobotFramework
+# 🤖 Template Selenium RobotFramework
 
-Este projeto tem como objetivo automatizar o login no site [Magento Software Testing Board](https://magento.softwaretestingboard.com/) utilizando Robot Framework com Selenium.
+Este projeto automatiza o **login** e a **pesquisa de produtos** no site [Magento Software Testing Board](https://magento.softwaretestingboard.com/) utilizando **Robot Framework** com **Selenium**.
 
-## 📂 Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 template-selenium-robotframework/
 │── tests/
 │   ├── login_test.robot
+│   ├── search_product_test.robot
 │── pages/
 │   ├── login_page.robot
+│   ├── search_page.robot
 │── keywords/
 │   ├── login_keywords.robot
+│   ├── search_keywords.robot
 │── locators/
 │   ├── login_locators.robot
+│   ├── search_locators.robot
 │── resources/
 │   ├── global_variables.robot
 │── config/
 │   ├── browser_setup.robot
-│── reports/  (adicionado ao .gitignore)
+│── reports/
 │── .github/workflows/
 │   ├── ci.yml
 │── Dockerfile
 │── requirements.txt
-│── .gitignore
 │── README.md
 ```
 
 ## 🚀 Tecnologias Utilizadas
-
-- **Robot Framework**
-- **SeleniumLibrary**
-- **Webdriver Manager**
-- **Docker**
-- **GitHub Actions**
+* Robot Framework
+* SeleniumLibrary
+* WebDriver Manager
+* Docker
+* GitHub Actions
 
 ## 📌 Pré-requisitos
+* Python 3.9+
+* pip
+* Docker (opcional para execução containerizada)
 
-- Python 3.9+
-- Pip
-- Docker (opcional para execução via container)
-
-## 🛠️ Configuração do Ambiente
+## ⚙️ Configuração do Ambiente
 
 ### 1️⃣ Instalar Dependências
-
-```sh
+```
 pip install -r requirements.txt
 ```
 
-### 2️⃣ Executar os Testes Localmente
-
-```sh
-rebot --loglevel DEBUG --outputdir reports --reporttitle "Relatório Personalizado" output.xml
+### 2️⃣ Executar Testes Localmente
+```
+robot --outputdir reports tests
 ```
 
-### 3️⃣ Executar os Testes com Docker
+### 3️⃣ Executar Testes com Variável de Ambiente
+```
+ENVIRONMENT=qa robot --outputdir reports tests
+```
 
-```sh
+### 4️⃣ Executar Testes com Docker
+```
 docker build -t robotframework-tests .
-docker run --rm -v $(pwd)/reports:/app/reports robotframework-tests
+docker run --rm -e ENVIRONMENT=qa -v $(pwd)/reports:/app/reports robotframework-tests
 ```
 
-## 🔧 Configuração do Navegador
+## 🌐 Configuração do Ambiente por Variável
+O sistema utiliza a variável de ambiente `ENVIRONMENT` para definir a URL do ambiente desejado. Os valores possíveis estão definidos no arquivo `resources/global_variables.robot`:
 
-O projeto permite a execução dos testes em diferentes navegadores e no modo headless ou não. Para isso, edite o arquivo `resources/global_variables.robot` e altere a variável `${BROWSER}`:
-
-- **Modo Headless Chrome:** `headlesschrome`
-- **Modo Normal Chrome:** `chrome`
-- **Firefox:** `firefox`
-- **Modo Headless Firefox:** `headlessfirefox`
-
-Exemplo:
-```robot
+```
 *** Variables ***
-${URL}               https://magento.softwaretestingboard.com/
-${BROWSER}           headlesschrome
-${LOGIN}             user@example.com
-${PASSWORD}          mypassword
+${ENVIRONMENT}     %{ENVIRONMENT}
+${URL}             Set Variable If    '${ENVIRONMENT}' == 'dev'    https://dev.magento.softwaretestingboard.com/
+...                ELSE IF            '${ENVIRONMENT}' == 'qa'     https://qa.magento.softwaretestingboard.com/
+...                ELSE IF            '${ENVIRONMENT}' == 'prod'   https://magento.softwaretestingboard.com/
+...                ELSE               https://magento.softwaretestingboard.com/
 ```
 
-Para rodar os testes com um navegador diferente sem modificar o arquivo, execute o comando:
-```sh
-robot --variable BROWSER:firefox --outputdir reports tests/login_test.robot
+## 🧪 Relatórios de Testes
+Os relatórios HTML padrão do Robot Framework são gerados na pasta `reports/`. Para visualizar:
+```
+open reports/log.html
 ```
 
-## 📊 Relatórios de Teste
+## 📦 Integração Contínua (CI)
+O projeto está configurado com GitHub Actions. Ao realizar um push na branch `master`, os testes são executados automaticamente, e os relatórios são salvos como artefatos.
 
-Os relatórios serão gerados na pasta **reports/**. Para visualizá-los, abra o arquivo **log.html** no navegador.
+## 🧱 Padrão de Projeto
+O projeto segue o padrão **Page Object Model (POM)**, com a seguinte separação:
+* `pages/` – Representações das páginas
+* `keywords/` – Ações reutilizáveis
+* `locators/` – Mapeamento de elementos
+* `tests/` – Casos de teste
 
-## 📦 Integração Contínua (GitHub Actions)
-
-O projeto está configurado para rodar os testes automaticamente ao fazer push na branch `main`. O relatório será anexado como artefato no GitHub Actions.
-
-## 📜 Estrutura dos Testes
-
-O projeto segue o padrão **Page Object Model (POM)** com separação em:
-
-- **pages/** → Páginas da aplicação
-- **keywords/** → Palavras-chave reutilizáveis
-- **locators/** → Mapeamento de elementos
-- **tests/** → Casos de teste
-
-## 📄 Licença
-
-Este projeto é open-source e pode ser utilizado livremente.
-
----
+## 📷 Captura de Tela em Falhas
+O projeto captura screenshots automaticamente em caso de falhas, visíveis no `log.html`.

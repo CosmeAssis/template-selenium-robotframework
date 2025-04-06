@@ -1,4 +1,4 @@
-name: Run Robot Tests
+name: Executar Testes Robot Framework
 
 on:
   push:
@@ -6,45 +6,37 @@ on:
       - master
 
 jobs:
-  test:
+  testes:
     runs-on: ubuntu-latest
-    continue-on-error: true  # Permite que o workflow continue mesmo se um teste falhar
+    continue-on-error: true
 
     steps:
-      - name: Checkout Code
+      - name: 📥 Checkout do Código
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: 🐍 Configurar Python
         uses: actions/setup-python@v3
         with:
           python-version: 3.9
 
-      - name: Create Cache Directory (Fix)
-        run: mkdir -p /home/runner/.cache/pip  # Garante que o diretório exista
-
-      - name: Install Chrome & ChromeDriver
+      - name: 📦 Instalar Dependências
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget unzip curl
-          sudo apt-get install -y chromium-browser chromium-chromedriver
-          echo "✅ Chrome & ChromeDriver instalados com sucesso!"
+          sudo apt-get install -y wget unzip curl chromium-browser chromium-chromedriver
+          pip install -r requirements.txt
+          python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
 
-      - name: Install Dependencies
-        run: pip install --no-cache-dir -r requirements.txt
+      - name: 🧪 Executar Testes Robot
+        env:
+          ENVIRONMENT: qa  # você pode trocar por dev, prod etc
+        run: robot --outputdir reports tests || true
 
-      - name: Install WebDriver Manager
-        run: python -c "from webdriver_manager.chrome import ChromeDriverManager; print(ChromeDriverManager().install())"
-      
-      - name: Run Tests
-        run: robot --outputdir reports --exitonfailure tests/login_test.robot || true
-      
-      - name: Generate Enhanced Report
+      - name: 📊 Gerar Relatório Final
         run: rebot --loglevel DEBUG --reporttitle "Relatório Personalizado" --outputdir reports reports/output.xml
-      
 
-      - name: Upload Test Report
+      - name: 📤 Publicar Relatórios
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: relatorios-teste
           path: reports

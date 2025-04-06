@@ -6,7 +6,7 @@ Resource           ../keywords/login_keywords.robot
 
 Suite Setup        Configurar Navegador    ${URL}
 Suite Teardown     Fechar Navegador
-Test Teardown      Run Keyword If    '${TEST STATUS}' == 'FAIL'    Log    "🔴 Teste falhou, seguindo para o próximo."
+Test Teardown      Run Keyword If    '${TEST STATUS}' == 'FAIL'    Capture Page Screenshot
 
 *** Test Cases ***
 Teste de Login Válido
