@@ -1,4 +1,4 @@
-name: 🤖 CI Robot Framework
+name: 🤖 CI Robot Framework - Selenium
 
 on:
   push:
@@ -43,3 +43,13 @@ jobs:
         with:
           name: allure-report
           path: reports/allure-report
+
+      - name: 🚀 Publicar Relatório no Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: ./reports/allure-report
+          production-deploy: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  
