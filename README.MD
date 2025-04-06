@@ -90,6 +90,14 @@ reports/report.html
 reports/allure-report/index.html
 ```
 
+## 📊 Acesso ao Relatório Allure (sem instalação)
+
+Após baixar o artefato `allure-report.zip` no GitHub Actions:
+
+1. Extraia o `.zip` em sua máquina
+2. Abra o arquivo `index.html` com duplo clique
+3. O relatório será exibido no navegador, sem necessidade de instalação
+
 ## 📦 Integração Contínua (CI)
 
 A pipeline GitHub Actions executa os testes na branch `master` e gera os relatórios automaticamente como artefatos.

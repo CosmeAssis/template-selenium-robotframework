@@ -3,8 +3,10 @@ name: 🤖 CI Robot Framework
 on:
   push:
     branches:
-      - '**'  # Qualquer branch
+      - master
   pull_request:
+    branches:
+      - master
 
 jobs:
   run-tests:
@@ -29,14 +31,14 @@ jobs:
           ENVIRONMENT=qa robot \
             --listener allure_robotframework;allure-results \
             --outputdir allure-results tests
-        continue-on-error: true  # <-- isso garante que os próximos passos rodem mesmo que falhe
+        continue-on-error: true
 
       - name: 🧪 Gerar Relatório Allure
         run: |
           allure generate allure-results -o reports/allure-report --clean
-          ls -l reports/allure-report  # Verifica se foi gerado corretamente
+          ls -l reports/allure-report
 
-      - name: 📎 Salvar Relatórios como Artefato
+      - name: 📎 Salvar Relatório Allure como Artefato
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
