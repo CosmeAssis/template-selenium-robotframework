@@ -1,47 +1,42 @@
-name: 🤖 CI Robot Framework - Selenium
+name: Run Tests and Deploy Allure Report
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+    branches: [main]
 
 jobs:
-  run-tests:
+  test-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout do Código
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: 🐍 Configurar Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: 📦 Instalar Dependências
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          npm install -g allure-commandline --force
 
-      - name: 🤖 Executar Testes Robot Framework
+      - name: Run tests
         run: |
-          ENVIRONMENT=qa robot \
-            --listener allure_robotframework;allure-results \
-            --outputdir allure-results tests
-        continue-on-error: true
+          robot -d results tests/
 
-      - name: 🧪 Gerar Relatório Allure na pasta docs/
+      - name: Generate Allure Report
         run: |
-          rm -rf docs
-          allure generate allure-results -o docs --clean
-          touch docs/.nojekyll
+          pip install robotframework-allure
+          allure generate results --clean -o docs
+          echo "" > docs/.nojekyll
 
-      - name: 🚀 Deploy para a branch gh-pages (GitHub Pages)
+      - name: Deploy Allure Report to GitHub Pages
+        if: success()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          publish_branch: gh-pages
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./docs
+            publish_branch: gh-pages
+            user_name: "github-actions[bot]"
+            user_email: "github-actions[bot]@users.noreply.github.com"
