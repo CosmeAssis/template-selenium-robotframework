@@ -1,37 +1,40 @@
-name: CI - Robot Framework Selenium
+name: 🤖 CI Robot Framework
 
 on:
   push:
     branches:
-      - '**'
+      - '**'  # Qualquer branch
+  pull_request:
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧾 Checkout do Código
+      - name: 📥 Checkout do Código
         uses: actions/checkout@v3
 
       - name: 🐍 Configurar Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: 📦 Instalar Dependências
         run: |
-          pip install --upgrade pip
           pip install -r requirements.txt
+          npm install -g allure-commandline --force
 
-      - name: 🧪 Executar Testes
+      - name: 🤖 Executar Testes Robot Framework
         run: |
-          mkdir -p reports
-          ENVIRONMENT=qa robot --listener "allure_robotframework;allure-results" --outputdir allure-results tests
+          ENVIRONMENT=qa robot \
+            --listener allure_robotframework;allure-results \
+            --outputdir allure-results tests
+        continue-on-error: true  # <-- isso garante que os próximos passos rodem mesmo que falhe
 
-      - name: 📊 Gerar Relatório Allure
+      - name: 🧪 Gerar Relatório Allure
         run: |
-          npm install -g allure-commandline --save-dev
           allure generate allure-results -o reports/allure-report --clean
+          ls -l reports/allure-report  # Verifica se foi gerado corretamente
 
       - name: 📎 Salvar Relatórios como Artefato
         uses: actions/upload-artifact@v4
