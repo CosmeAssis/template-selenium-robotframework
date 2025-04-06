@@ -1,42 +1,40 @@
-name: Executar Testes Robot Framework
+name: CI - Robot Framework Selenium
 
 on:
   push:
     branches:
-      - master
+      - '**'
 
 jobs:
-  testes:
+  run-tests:
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
-      - name: 📥 Checkout do Código
+      - name: 🧾 Checkout do Código
         uses: actions/checkout@v3
 
       - name: 🐍 Configurar Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.9'
 
       - name: 📦 Instalar Dependências
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip curl chromium-browser chromium-chromedriver
+          pip install --upgrade pip
           pip install -r requirements.txt
-          python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
 
-      - name: 🧪 Executar Testes Robot
-        env:
-          ENVIRONMENT: qa  # você pode trocar por dev, prod etc
-        run: robot --outputdir reports tests || true
+      - name: 🧪 Executar Testes
+        run: |
+          mkdir -p reports
+          ENVIRONMENT=qa robot --listener "allure_robotframework;allure-results" --outputdir allure-results tests
 
-      - name: 📊 Gerar Relatório Final
-        run: rebot --loglevel DEBUG --reporttitle "Relatório Personalizado" --outputdir reports reports/output.xml
+      - name: 📊 Gerar Relatório Allure
+        run: |
+          npm install -g allure-commandline --save-dev
+          allure generate allure-results -o reports/allure-report --clean
 
-      - name: 📤 Publicar Relatórios
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: 📎 Salvar Relatórios como Artefato
+        uses: actions/upload-artifact@v3
         with:
-          name: relatorios-teste
-          path: reports
+          name: allure-report
+          path: reports/allure-report

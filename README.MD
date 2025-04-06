@@ -6,41 +6,46 @@ Este projeto automatiza o **login** e a **pesquisa de produtos** no site [Magent
 
 ```
 template-selenium-robotframework/
-│── tests/
+├── tests/
 │   ├── login_test.robot
 │   ├── search_product_test.robot
-│── pages/
+├── pages/
 │   ├── login_page.robot
 │   ├── search_page.robot
-│── keywords/
+├── keywords/
 │   ├── login_keywords.robot
 │   ├── search_keywords.robot
-│── locators/
+├── locators/
 │   ├── login_locators.robot
 │   ├── search_locators.robot
-│── resources/
+├── resources/
 │   ├── global_variables.robot
-│── config/
+├── config/
 │   ├── browser_setup.robot
-│── reports/
-│── .github/workflows/
+├── reports/
+├── allure-results/
+├── .github/workflows/
 │   ├── ci.yml
-│── Dockerfile
-│── requirements.txt
-│── README.md
+├── Dockerfile
+├── requirements.txt
+├── README.md
 ```
 
 ## 🚀 Tecnologias Utilizadas
-* Robot Framework
-* SeleniumLibrary
-* WebDriver Manager
-* Docker
-* GitHub Actions
+
+- Robot Framework
+- SeleniumLibrary
+- WebDriver Manager
+- Allure Report
+- Docker
+- GitHub Actions
 
 ## 📌 Pré-requisitos
-* Python 3.9+
-* pip
-* Docker (opcional para execução containerizada)
+
+- Python 3.9+
+- pip
+- Docker (para execução containerizada)
+- Allure CLI (para visualizar relatórios localmente)
 
 ## ⚙️ Configuração do Ambiente
 
@@ -49,24 +54,22 @@ template-selenium-robotframework/
 pip install -r requirements.txt
 ```
 
-### 2️⃣ Executar Testes Localmente
+### 2️⃣ Executar Testes Localmente com Allure
 ```
-robot --outputdir reports tests
-```
-
-### 3️⃣ Executar Testes com Variável de Ambiente
-```
-ENVIRONMENT=qa robot --outputdir reports tests
+ENVIRONMENT=qa robot --listener "allure_robotframework;allure-results" --outputdir allure-results tests
+allure generate allure-results -o reports/allure-report --clean
+allure open reports/allure-report
 ```
 
-### 4️⃣ Executar Testes com Docker
+### 3️⃣ Executar com Docker
 ```
 docker build -t robotframework-tests .
-docker run --rm -e ENVIRONMENT=qa -v $(pwd)/reports:/app/reports robotframework-tests
+docker run --rm -e ENVIRONMENT=qa -v $(pwd)/reports:/app/reports -v $(pwd)/allure-results:/app/allure-results robotframework-tests
 ```
 
-## 🌐 Configuração do Ambiente por Variável
-O sistema utiliza a variável de ambiente `ENVIRONMENT` para definir a URL do ambiente desejado. Os valores possíveis estão definidos no arquivo `resources/global_variables.robot`:
+## 🌐 Configuração por Ambiente
+
+A variável `ENVIRONMENT` define a URL do ambiente:
 
 ```
 *** Variables ***
@@ -77,21 +80,29 @@ ${URL}             Set Variable If    '${ENVIRONMENT}' == 'dev'    https://dev.m
 ...                ELSE               https://magento.softwaretestingboard.com/
 ```
 
-## 🧪 Relatórios de Testes
-Os relatórios HTML padrão do Robot Framework são gerados na pasta `reports/`. Para visualizar:
+## 📊 Relatórios
+
+Relatórios HTML do Robot e Allure são gerados em:
+
 ```
-open reports/log.html
+reports/log.html
+reports/report.html
+reports/allure-report/index.html
 ```
 
 ## 📦 Integração Contínua (CI)
-O projeto está configurado com GitHub Actions. Ao realizar um push na branch `master`, os testes são executados automaticamente, e os relatórios são salvos como artefatos.
+
+A pipeline GitHub Actions executa os testes na branch `master` e gera os relatórios automaticamente como artefatos.
 
 ## 🧱 Padrão de Projeto
-O projeto segue o padrão **Page Object Model (POM)**, com a seguinte separação:
-* `pages/` – Representações das páginas
-* `keywords/` – Ações reutilizáveis
-* `locators/` – Mapeamento de elementos
-* `tests/` – Casos de teste
 
-## 📷 Captura de Tela em Falhas
-O projeto captura screenshots automaticamente em caso de falhas, visíveis no `log.html`.
+Segue o padrão **Page Object Model (POM)**:
+
+- `pages/`: páginas
+- `keywords/`: ações
+- `locators/`: elementos
+- `tests/`: testes
+
+## 📷 Prints em Falhas
+
+Prints automáticos são capturados em falhas e embutidos no log do Robot.

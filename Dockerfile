@@ -1,32 +1,23 @@
-FROM python:3.9
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Instala dependências e Google Chrome
-RUN apt-get update && apt-get install -y \
-    wget curl unzip gnupg ca-certificates fonts-liberation \
-    chromium-driver \
-    && rm -rf /var/lib/apt/lists/*
-
-# Instala Chrome manualmente
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list && \
-    apt-get update && \
-    apt-get install -y google-chrome-stable && \
-    rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-RUN python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
-
-# Define variável de ambiente default
-ENV ENVIRONMENT=prod
-
-ENTRYPOINT ["robot", "--outputdir", "reports"]
-
-CMD ["tests"]
+    FROM python:3.9-slim
+    
+    WORKDIR /app
+    
+    RUN apt-get update && apt-get install -y \
+        wget curl unzip xvfb libxi6 libgconf-2-4 \
+        default-jre \
+        chromium chromium-driver && \
+        rm -rf /var/lib/apt/lists/*
+    
+    COPY requirements.txt .
+    RUN pip install --no-cache-dir -r requirements.txt
+    
+    COPY . .
+    
+    RUN wget https://github.com/allure-framework/allure2/releases/download/2.24.1/allure-2.24.1.tgz && \
+        tar -zxvf allure-2.24.1.tgz && \
+        mv allure-2.24.1 /opt/allure && \
+        ln -s /opt/allure/bin/allure /usr/bin/allure
+    
+    CMD robot --listener allure_robotframework;allure-results --outputdir allure-results tests && \
+        allure generate allure-results -o reports/allure-report --clean
+    

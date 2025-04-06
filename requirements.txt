@@ -6,3 +6,4 @@ robotframework-pabot
 robotframework-faker
 robotframework-requests
 robotframework-jsonlibrary
+allure-robotframework
