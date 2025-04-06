@@ -33,19 +33,15 @@ jobs:
             --outputdir allure-results tests
         continue-on-error: true
 
-      - name: 🧪 Gerar Relatório Allure
+      - name: 🧪 Gerar Relatório Allure em /docs
         run: |
-          allure generate allure-results -o reports/allure-report --clean
-          ls -l reports/allure-report
+          allure generate allure-results -o docs --clean
 
-      - name: 📎 Salvar Relatório como Artefato
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: reports/allure-report
-
-      - name: 🗂️ Copiar relatório para pasta docs (GitHub Pages)
+      - name: 📤 Commit do Relatório para GitHub Pages
+        if: github.ref == 'refs/heads/master'
         run: |
-            mkdir -p docs
-            cp -r reports/allure-report/* docs/
-            touch docs/.nojekyll
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git commit -m "📊 Atualiza relatório Allure [ci skip]" || echo "Nada para commitar"
+          git push
