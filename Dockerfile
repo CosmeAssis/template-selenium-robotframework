@@ -1,33 +1,23 @@
-# Usa uma imagem base com Python e dependências do Selenium
-FROM python:3.9
-
-# Instala dependências do Chrome e WebDriver Manager
-RUN apt-get update && apt-get install -y \
-    wget unzip curl \
-    chromium chromium-driver \
-    google-chrome-stable && \
-    rm -rf /var/lib/apt/lists/*
-
-# Define variáveis para indicar execução dentro do Docker
-ENV RUNNING_IN_DOCKER=true
-
-# Define o diretório de trabalho
-WORKDIR /app
-
-# Copia apenas o arquivo de dependências primeiro (para otimizar cache)
-COPY requirements.txt .
-
-# Instala as dependências do projeto
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copia todo o código do projeto
-COPY . .
-
-# Garante que o ChromeDriver correto será instalado
-RUN python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"
-
-# Define o ponto de entrada para execução dos testes
-ENTRYPOINT ["robot", "--outputdir", "reports"]
-
-# Permite que o usuário passe parâmetros personalizados ao rodar o container
-CMD ["robot", "--outputdir", "reports", "--exitonfailure", "tests/login_test.robot"]
+    FROM python:3.9-slim
+    
+    WORKDIR /app
+    
+    RUN apt-get update && apt-get install -y \
+        wget curl unzip xvfb libxi6 libgconf-2-4 \
+        default-jre \
+        chromium chromium-driver && \
+        rm -rf /var/lib/apt/lists/*
+    
+    COPY requirements.txt .
+    RUN pip install --no-cache-dir -r requirements.txt
+    
+    COPY . .
+    
+    RUN wget https://github.com/allure-framework/allure2/releases/download/2.24.1/allure-2.24.1.tgz && \
+        tar -zxvf allure-2.24.1.tgz && \
+        mv allure-2.24.1 /opt/allure && \
+        ln -s /opt/allure/bin/allure /usr/bin/allure
+    
+    CMD robot --listener allure_robotframework;allure-results --outputdir allure-results tests && \
+        allure generate allure-results -o reports/allure-report --clean
+    

@@ -1,3 +1,9 @@
 robotframework
-robotframework-seleniumlibrary
+selenium
 webdriver-manager
+robotframework-seleniumlibrary
+robotframework-pabot
+robotframework-faker
+robotframework-requests
+robotframework-jsonlibrary
+allure-robotframework

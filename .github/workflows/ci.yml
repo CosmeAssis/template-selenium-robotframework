@@ -1,44 +1,55 @@
-name: Run Robot Tests
+name: 🤖 CI Robot Framework - Selenium
 
 on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  test:
+  run-tests:
     runs-on: ubuntu-latest
-    continue-on-error: true  # Permite que o workflow continue mesmo se um teste falhar
 
     steps:
-      - name: Checkout Code
+      - name: 📥 Checkout do Código
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
-          cache: 'pip'
+          python-version: '3.11'
 
-      - name: Install Chrome & ChromeDriver
+      - name: 📦 Instalar Dependências
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip curl
-          sudo apt-get install -y chromium-browser chromium-chromedriver
-          echo "✅ Chrome & ChromeDriver instalados com sucesso!"
+          pip install -r requirements.txt
+          npm install -g allure-commandline --force
 
-      - name: Install Dependencies
-        run: pip install --no-cache-dir -r requirements.txt
+      - name: 🤖 Executar Testes Robot Framework
+        run: |
+          ENVIRONMENT=qa robot \
+            --listener allure_robotframework;allure-results \
+            --outputdir allure-results tests
+        continue-on-error: true
 
-      - name: Install WebDriver Manager
-        run: python -c "from webdriver_manager.chrome import ChromeDriverManager; print(ChromeDriverManager().install())"
-      
-      - name: Run Tests
-        run: robot --outputdir reports --exitonfailure tests/login_test.robot || true
+      - name: 🧪 Gerar Relatório Allure
+        run: |
+          allure generate allure-results -o reports/allure-report --clean
+          ls -l reports/allure-report
 
-      - name: Upload Test Report
-        if: always()
-        uses: actions/upload-artifact@v4  # Atualizado para v4
+      - name: 📎 Salvar Relatório Allure como Artefato
+        uses: actions/upload-artifact@v4
         with:
-          name: test-reports
-          path: reports
+          name: allure-report
+          path: reports/allure-report
+
+      - name: 🚀 Publicar Relatório no Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: ./reports/allure-report
+          production-deploy: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  
