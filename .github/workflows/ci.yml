@@ -1,47 +1,58 @@
-name: Run Tests and Deploy Allure Report
+name: Executar Testes e Publicar Relatório Allure
 
 on:
   pull_request:
     branches:
       - '**'
+  push:
+    branches:
+      - master
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Instalar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Instalar dependências
         run: |
-            pip install -r requirements.txt
-            pip install robotframework robotframework-seleniumlibrary robotframework-pabot
-            pip install allure-robotframework
-        
-      - name: Run tests (even on failure)
+          pip install -r requirements.txt
+          pip install robotframework robotframework-seleniumlibrary robotframework-pabot
+          pip install allure-robotframework
+
+      - name: Executar testes (mesmo com falhas)
         run: |
           mkdir -p results
           pabot --outputdir results tests || true
 
-      - name: Generate Allure Report
+      - name: Gerar relatório Allure
         run: |
           rm -rf docs
           mkdir -p docs
           robot --loglevel TRACE --outputdir results --report NONE --log NONE --xunit results/xunit.xml tests || true
           allure generate results -o docs --clean || true
 
-      - name: Deploy Allure Report to GitHub Pages
+      - name: Verificar se relatório foi gerado
+        run: |
+          if [ ! -d "docs" ] || [ -z "$(ls -A docs)" ]; then
+            echo "A pasta 'docs' está vazia ou não existe. Pulando deploy para o GitHub Pages."
+            exit 1
+          fi
+
+      - name: Publicar no GitHub Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
           publish_branch: gh-pages
+          force_orphan: true
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
