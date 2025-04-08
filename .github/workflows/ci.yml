@@ -65,15 +65,17 @@ jobs:
           sudo mv allure-2.33.0/* /opt/allure
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Gerar relatório Allure com histórico e tema customizado
+      - name: Gerar relatório Allure com plugin de tema customizado
         run: |
           rm -rf docs
           mkdir -p docs
 
+          # Copiar histórico antigo (para mostrar "trend")
           if [ -d "old-docs/history" ]; then
             cp -r old-docs/history results/.history
           fi
 
+          # Gera o relatório com nome e plugin customizado
           allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" --plugins ./allure-plugin/custom-theme || true
 
       - name: Verificar se o relatório foi gerado

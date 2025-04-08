@@ -1,30 +1,27 @@
-/* template-selenium-robotframework/allure-plugin/custom-theme/static/styles.css */
+/* Fonte padrão do corpo do relatório */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
 
-/* Lateral (menu) */
-.side-nav {
-    background-color: #24292e;
-  }
-  
-  /* Título no topo */
-  .navbar__title {
+/* Logo do cabeçalho (navbar) */
+.navbar-brand {
     font-weight: bold;
-    font-size: 20px;
-    color: #ffffff;
-  }
-  
-  /* Badge de sucesso e erro */
-  .status.status_passed {
-    background-color: #28a745;
-  }
-  .status.status_failed {
-    background-color: #d73a49;
-  }
-  
-  /* Logo personalizado */
-  .side-nav__brand {
-    background-image: url('logo.png'); /* só se tiver um logo */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-  
+    font-size: 1.3rem;
+    color: #2a4365 !important;
+}
+
+/* Fundo da navbar */
+.navbar {
+    background-color: #f0f4f8 !important;
+}
+
+/* Títulos dos cards */
+.card-title {
+    color: #2b6cb0 !important;
+}
+
+/* Fundo dos cards e do conteúdo principal */
+.card-header,
+.tab-content {
+    background-color: #ffffff !important;
+}
