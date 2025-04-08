@@ -1,46 +1,100 @@
-name: 🤖 CI Robot Framework - Selenium
+name: Executar Testes e Publicar Allure no GitHub Pages
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
+    branches:
+      - '**'
+  push:
     branches:
       - master
 
 jobs:
-  test-and-deploy:
+  test_and_deploy:
     runs-on: ubuntu-latest
 
+    env:
+      TEST_ENVIRONMENT: qa
+      TEST_BROWSER: Chrome
+
     steps:
-      - name: Checkout repo
+      - name: Clonar o repositório
         uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Baixar histórico anterior do Allure
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          path: old-docs
+
+      - name: Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Instalar dependências
         run: |
           pip install -r requirements.txt
+          pip install robotframework robotframework-seleniumlibrary robotframework-pabot
+          pip install allure-robotframework
 
-      - name: Run tests
+      - name: Executar testes com metadados Allure
         run: |
-          robot -d results tests/
+          mkdir -p results
 
-      - name: Generate Allure Report
+          # Metadados: Environment
+          echo "Environment=${{ env.TEST_ENVIRONMENT }}" > results/environment.properties
+          echo "Browser=${{ env.TEST_BROWSER }}" >> results/environment.properties
+
+          # Metadados: Executor
+          echo '{
+            "name": "GitHub Actions",
+            "type": "CI",
+            "url": "https://github.com/${{ github.repository }}/actions",
+            "buildOrder": 1,
+            "buildName": "${{ github.workflow }}",
+            "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }' > results/executor.json
+
+          # Executar testes com listener Allure
+          pabot --outputdir results --listener "allure_robotframework;results" tests || true
+
+      - name: Instalar Allure CLI
         run: |
-          pip install robotframework-allure
-          allure generate results --clean -o docs
-          echo "" > docs/.nojekyll
+          wget https://github.com/allure-framework/allure2/releases/download/2.33.0/allure-2.33.0.tgz
+          tar -zxvf allure-2.33.0.tgz
+          sudo mkdir -p /opt/allure
+          sudo mv allure-2.33.0/* /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Deploy Allure Report to GitHub Pages
-        if: success()
+      - name: Gerar relatório Allure com histórico e nome personalizado
+        run: |
+          rm -rf docs
+          mkdir -p docs
+
+          # Copiar histórico antigo (para mostrar "trend")
+          if [ -d "old-docs/history" ]; then
+            cp -r old-docs/history results/.history
+          fi
+
+          allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" || true
+
+      - name: Verificar se o relatório foi gerado
+        id: check-report
+        run: |
+          if [ -d "docs" ] && [ "$(ls -A docs)" ]; then
+            echo "Relatório encontrado."
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "Relatório NÃO encontrado. Pulando deploy."
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publicar no GitHub Pages
+        if: steps.check-report.outputs.should_deploy == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: ./docs
-            publish_branch: gh-pages
-            user_name: "github-actions[bot]"
-            user_email: "github-actions[bot]@users.noreply.github.com"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"

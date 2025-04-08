@@ -69,7 +69,7 @@ docker run --rm -e ENVIRONMENT=qa -v $(pwd)/reports:/app/reports -v $(pwd)/allur
 
 ## 🌐 Configuração por Ambiente
 
-A variável `ENVIRONMENT` define a URL do ambiente:
+A variável de ambiente `ENVIRONMENT` define a URL conforme o ambiente:
 
 ```
 *** Variables ***
@@ -82,35 +82,38 @@ ${URL}             Set Variable If    '${ENVIRONMENT}' == 'dev'    https://dev.m
 
 ## 📊 Relatórios
 
-Relatórios HTML do Robot e Allure são gerados em:
+- `reports/log.html` — Log do Robot
+- `reports/report.html` — Relatório padrão do Robot
+- `reports/allure-report/index.html` — Relatório Allure com nome personalizado
 
-```
-reports/log.html
-reports/report.html
-reports/allure-report/index.html
-```
+### 📊 Acesso ao Relatório Allure (sem instalação)
+1. Acesse a aba **Actions** no repositório do GitHub
+2. Baixe o artefato `allure-report.zip` gerado
+3. Extraia o .zip em sua máquina
+4. Abra o arquivo `index.html` no navegador
 
-## 📊 Acesso ao Relatório Allure (sem instalação)
+## 🚀 Publicação Automática no GitHub Pages
 
-Após baixar o artefato `allure-report.zip` no GitHub Actions:
+O relatório Allure é publicado automaticamente na branch `gh-pages` após o CI. Acesse via:
 
-1. Extraia o `.zip` em sua máquina
-2. Abra o arquivo `index.html` com duplo clique
-3. O relatório será exibido no navegador, sem necessidade de instalação
+[🔗 https://cosmeassis.github.io/template-selenium-robotframework/](https://cosmeassis.github.io/template-selenium-robotframework/)
 
 ## 📦 Integração Contínua (CI)
 
-A pipeline GitHub Actions executa os testes na branch `master` e gera os relatórios automaticamente como artefatos.
+A pipeline GitHub Actions:
+- Executa os testes nas branches `master` e pull requests
+- Define variáveis como `ENVIRONMENT=qa` e `Browser=Chrome`
+- Gera relatórios Allure com histórico (`trend`)
+- Publica o relatório Allure no GitHub Pages (`gh-pages`)
 
 ## 🧱 Padrão de Projeto
 
-Segue o padrão **Page Object Model (POM)**:
-
+O projeto segue o padrão **Page Object Model (POM)**:
 - `pages/`: páginas
 - `keywords/`: ações
 - `locators/`: elementos
-- `tests/`: testes
+- `tests/`: arquivos de teste
 
 ## 📷 Prints em Falhas
 
-Prints automáticos são capturados em falhas e embutidos no log do Robot.
+Capturas de tela são tiradas automaticamente em falhas e anexadas ao relatório Robot e Allure.
