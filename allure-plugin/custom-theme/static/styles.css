@@ -1,0 +1,30 @@
+/* template-selenium-robotframework/allure-plugin/custom-theme/static/styles.css */
+
+/* Lateral (menu) */
+.side-nav {
+    background-color: #24292e;
+  }
+  
+  /* Título no topo */
+  .navbar__title {
+    font-weight: bold;
+    font-size: 20px;
+    color: #ffffff;
+  }
+  
+  /* Badge de sucesso e erro */
+  .status.status_passed {
+    background-color: #28a745;
+  }
+  .status.status_failed {
+    background-color: #d73a49;
+  }
+  
+  /* Logo personalizado */
+  .side-nav__brand {
+    background-image: url('logo.png'); /* só se tiver um logo */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  

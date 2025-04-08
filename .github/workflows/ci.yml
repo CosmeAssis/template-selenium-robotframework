@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TEST_ENVIRONMENT: qa
+      TEST_ENVIRONMENT: QA
       TEST_BROWSER: Chrome
 
     steps:
@@ -55,7 +55,6 @@ jobs:
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }' > results/executor.json
 
-          # Executar testes com listener Allure
           pabot --outputdir results --listener "allure_robotframework;results" tests || true
 
       - name: Instalar Allure CLI
@@ -66,17 +65,16 @@ jobs:
           sudo mv allure-2.33.0/* /opt/allure
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Gerar relatório Allure com histórico e nome personalizado
+      - name: Gerar relatório Allure com histórico e tema customizado
         run: |
           rm -rf docs
           mkdir -p docs
 
-          # Copiar histórico antigo (para mostrar "trend")
           if [ -d "old-docs/history" ]; then
             cp -r old-docs/history results/.history
           fi
 
-          allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" || true
+          allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" --plugins ./allure-plugin/custom-theme || true
 
       - name: Verificar se o relatório foi gerado
         id: check-report
