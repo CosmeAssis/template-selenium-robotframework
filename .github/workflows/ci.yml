@@ -12,6 +12,10 @@ jobs:
   test_and_deploy:
     runs-on: ubuntu-latest
 
+    env:
+      TEST_ENVIRONMENT: QA
+      TEST_BROWSER: Chrome
+
     steps:
       - name: Clonar o repositório
         uses: actions/checkout@v3
@@ -27,11 +31,27 @@ jobs:
           pip install robotframework robotframework-seleniumlibrary robotframework-pabot
           pip install allure-robotframework
 
-      - name: Executar testes
+      - name: Executar testes com metadados Allure
         run: |
-            mkdir -p results
-            pabot --outputdir results --listener "allure_robotframework;results" tests || true
-        
+          mkdir -p results
+
+          # Metadados: Environment
+          echo "Environment=${{ env.TEST_ENVIRONMENT }}" > results/environment.properties
+          echo "Browser=${{ env.TEST_BROWSER }}" >> results/environment.properties
+
+          # Metadados: Executor
+          echo '{
+            "name": "GitHub Actions",
+            "type": "CI",
+            "url": "https://github.com/${{ github.repository }}/actions",
+            "buildOrder": 1,
+            "buildName": "${{ github.workflow }}",
+            "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }' > results/executor.json
+
+          # Executar testes com listener Allure
+          pabot --outputdir results --listener "allure_robotframework;results" tests || true
+
       - name: Instalar Allure CLI
         run: |
           wget https://github.com/allure-framework/allure2/releases/download/2.33.0/allure-2.33.0.tgz
