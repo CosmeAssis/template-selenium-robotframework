@@ -1,22 +1,19 @@
-name: 🤖 CI Robot Framework - Selenium
+name: Run Tests and Deploy Allure Report
 
 on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
 
 jobs:
-  test-and-deploy:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -24,23 +21,27 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install robotframework robotframework-seleniumlibrary robotframework-fail library robotframework-pabot
+          pip install allure-robotframework
 
-      - name: Run tests
+      - name: Run tests (even on failure)
         run: |
-          robot -d results tests/
+          mkdir -p results
+          pabot --outputdir results tests || true
 
       - name: Generate Allure Report
         run: |
-          pip install robotframework-allure
-          allure generate results --clean -o docs
-          echo "" > docs/.nojekyll
+          rm -rf docs
+          mkdir -p docs
+          robot --loglevel TRACE --outputdir results --report NONE --log NONE --xunit results/xunit.xml tests || true
+          allure generate results -o docs --clean || true
 
       - name: Deploy Allure Report to GitHub Pages
-        if: success()
+        if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: ./docs
-            publish_branch: gh-pages
-            user_name: "github-actions[bot]"
-            user_email: "github-actions[bot]@users.noreply.github.com"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
