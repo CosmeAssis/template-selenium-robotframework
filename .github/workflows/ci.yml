@@ -27,8 +27,9 @@ jobs:
 
       - name: Executar testes
         run: |
-          mkdir -p results
-          pabot --outputdir results --listener allure_robotframework;results tests || true
+            mkdir -p results
+            pabot --outputdir results --listener "allure_robotframework;results" tests || true
+        
 
       - name: Instalar Allure CLI
         run: |
