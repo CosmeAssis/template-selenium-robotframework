@@ -1,22 +1,20 @@
-name: Executar Testes e Publicar Relatório Allure
+name: Executar Testes e Publicar Allure no GitHub Pages
 
 on:
-  pull_request:
-    branches:
-      - '**'
   push:
     branches:
       - master
+  pull_request:
 
 jobs:
-  test:
+  test_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
+      - name: Clonar o repositório
         uses: actions/checkout@v3
 
-      - name: Instalar Python
+      - name: Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -36,27 +34,26 @@ jobs:
         run: |
           rm -rf docs
           mkdir -p docs
-          robot --loglevel TRACE --outputdir results --report NONE --log NONE --xunit results/xunit.xml tests || true
+          robot --loglevel TRACE --outputdir results --report NONE --log NONE tests || true
           allure generate results -o docs --clean || true
 
-      - name: Verificar se relatório foi gerado corretamente
-        id: check_docs
+      - name: Verificar se o relatório foi gerado
+        id: check-report
         run: |
           if [ -d "docs" ] && [ "$(ls -A docs)" ]; then
             echo "Relatório encontrado."
             echo "should_deploy=true" >> $GITHUB_OUTPUT
           else
-            echo "Relatório não encontrado. Skipping deploy."
+            echo "Relatório NÃO encontrado. Pulando deploy."
             echo "should_deploy=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Publicar no GitHub Pages
-        if: steps.check_docs.outputs.should_deploy == 'true'
+        if: steps.check-report.outputs.should_deploy == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
           publish_branch: gh-pages
-          force_orphan: true
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
