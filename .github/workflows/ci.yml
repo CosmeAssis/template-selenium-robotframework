@@ -25,17 +25,19 @@ jobs:
           pip install robotframework robotframework-seleniumlibrary robotframework-pabot
           pip install allure-robotframework
 
-      - name: Executar testes (mesmo com falhas)
+      - name: Executar testes
         run: |
           mkdir -p results
           pabot --outputdir results tests || true
     
       - name: Instalar Allure CLI
         run: |
-            wget $(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep "browser_download_url.*tgz" | cut -d '"' -f 4)
-            tar -zxvf allure-*.tgz
-            sudo mv allure-* /opt/allure
+            wget https://github.com/allure-framework/allure2/releases/download/2.33.0/allure-2.33.0.tgz
+            tar -zxvf allure-2.33.0.tgz
+            sudo mkdir -p /opt/allure
+            sudo mv allure-2.33.0/* /opt/allure
             sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+        
   
       - name: Gerar relatório Allure
         run: |
