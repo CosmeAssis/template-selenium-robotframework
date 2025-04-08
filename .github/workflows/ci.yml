@@ -28,23 +28,21 @@ jobs:
       - name: Executar testes
         run: |
           mkdir -p results
-          pabot --outputdir results tests || true
-    
+          pabot --outputdir results --listener allure_robotframework;results tests || true
+
       - name: Instalar Allure CLI
         run: |
-            wget https://github.com/allure-framework/allure2/releases/download/2.33.0/allure-2.33.0.tgz
-            tar -zxvf allure-2.33.0.tgz
-            sudo mkdir -p /opt/allure
-            sudo mv allure-2.33.0/* /opt/allure
-            sudo ln -s /opt/allure/bin/allure /usr/bin/allure
-        
-  
+          wget https://github.com/allure-framework/allure2/releases/download/2.33.0/allure-2.33.0.tgz
+          tar -zxvf allure-2.33.0.tgz
+          sudo mkdir -p /opt/allure
+          sudo mv allure-2.33.0/* /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+
       - name: Gerar relatório Allure
         run: |
-            rm -rf docs
-            mkdir -p docs
-            robot --loglevel TRACE --outputdir results --report NONE --log NONE tests || true
-            allure generate results -o docs --clean || true
+          rm -rf docs
+          mkdir -p docs
+          allure generate results -o docs --clean || true
 
       - name: Verificar se o relatório foi gerado
         id: check-report
