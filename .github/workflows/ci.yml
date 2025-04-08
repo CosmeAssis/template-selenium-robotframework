@@ -30,12 +30,21 @@ jobs:
           mkdir -p results
           pabot --outputdir results tests || true
 
+      - name: Instalar Allure CLI
+        run: |
+            wget https://github.com/allure-framework/allure2/releases/latest/download/allure-2.27.0.tgz
+            tar -zxvf allure-2.27.0.tgz
+            sudo mv allure-2.27.0 /opt/allure
+            sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+  
       - name: Gerar relatório Allure
         run: |
-          rm -rf docs
-          mkdir -p docs
-          robot --loglevel TRACE --outputdir results --report NONE --log NONE tests || true
-          allure generate results -o docs --clean || true
+            rm -rf docs
+            mkdir -p docs
+            robot --loglevel TRACE --outputdir results --report NONE --log NONE tests || true
+            allure generate results -o docs --clean || true
+  
+
 
       - name: Verificar se o relatório foi gerado
         id: check-report
