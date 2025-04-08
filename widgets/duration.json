@@ -1,1 +1,1 @@
-[]
+[{"uid":"4149925a617ad170","name":"Pesquisar Produto e Validar Resultados","time":{"start":1744079230178,"stop":1744079231779,"duration":1601},"status":"passed","severity":"normal"},{"uid":"c50d6910142b8619","name":"Teste de Login Inválido","time":{"start":1744079235739,"stop":1744079240885,"duration":5146},"status":"failed","severity":"normal"},{"uid":"89250c03353ff64f","name":"Teste de Login Válido","time":{"start":1744079230153,"stop":1744079235738,"duration":5585},"status":"failed","severity":"normal"}]
