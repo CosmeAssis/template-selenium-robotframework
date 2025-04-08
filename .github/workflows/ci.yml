@@ -1,9 +1,6 @@
 name: Run Tests and Deploy Allure Report
 
 on:
-  push:
-    branches:
-      - '**'
   pull_request:
     branches:
       - '**'
