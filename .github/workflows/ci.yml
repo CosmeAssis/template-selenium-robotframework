@@ -1,10 +1,12 @@
 name: Executar Testes e Publicar Allure no GitHub Pages
 
 on:
+  pull_request:
+    branches:
+      - '**'
   push:
     branches:
       - master
-  pull_request:
 
 jobs:
   test_and_deploy:
@@ -30,7 +32,6 @@ jobs:
             mkdir -p results
             pabot --outputdir results --listener "allure_robotframework;results" tests || true
         
-
       - name: Instalar Allure CLI
         run: |
           wget https://github.com/allure-framework/allure2/releases/download/2.33.0/allure-2.33.0.tgz
