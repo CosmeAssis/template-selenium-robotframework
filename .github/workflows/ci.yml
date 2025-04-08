@@ -23,10 +23,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install robotframework robotframework-seleniumlibrary robotframework-fail library robotframework-pabot
-          pip install allure-robotframework
-
+            pip install -r requirements.txt
+            pip install robotframework robotframework-seleniumlibrary robotframework-pabot
+            pip install allure-robotframework
+        
       - name: Run tests (even on failure)
         run: |
           mkdir -p results
