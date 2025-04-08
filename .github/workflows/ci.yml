@@ -39,15 +39,19 @@ jobs:
           robot --loglevel TRACE --outputdir results --report NONE --log NONE --xunit results/xunit.xml tests || true
           allure generate results -o docs --clean || true
 
-      - name: Verificar se relatório foi gerado
+      - name: Verificar se relatório foi gerado corretamente
+        id: check_docs
         run: |
-          if [ ! -d "docs" ] || [ -z "$(ls -A docs)" ]; then
-            echo "A pasta 'docs' está vazia ou não existe. Pulando deploy para o GitHub Pages."
-            exit 1
+          if [ -d "docs" ] && [ "$(ls -A docs)" ]; then
+            echo "Relatório encontrado."
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "Relatório não encontrado. Skipping deploy."
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Publicar no GitHub Pages
-        if: always()
+        if: steps.check_docs.outputs.should_deploy == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
