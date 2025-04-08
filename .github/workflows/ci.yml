@@ -1,12 +1,12 @@
 name: Executar Testes e Publicar Allure no GitHub Pages
 
 on:
-  pull_request:
-    branches:
-      - '**'
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - '**' 
 
 jobs:
   test_and_deploy:
@@ -20,7 +20,8 @@ jobs:
       - name: Clonar o repositório
         uses: actions/checkout@v3
 
-      - name: Baixar histórico anterior do Allure
+      - name: Baixar histórico anterior do Allure (gh-pages)
+        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v3
         with:
           ref: gh-pages
@@ -41,11 +42,11 @@ jobs:
         run: |
           mkdir -p results
 
-          # Metadados: Environment
+          # Metadados do ambiente
           echo "Environment=${{ env.TEST_ENVIRONMENT }}" > results/environment.properties
           echo "Browser=${{ env.TEST_BROWSER }}" >> results/environment.properties
 
-          # Metadados: Executor
+          # Executor
           echo '{
             "name": "GitHub Actions",
             "type": "CI",
@@ -66,26 +67,27 @@ jobs:
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
       - name: Gerar relatório Allure com plugin de tema customizado
+        if: github.ref == 'refs/heads/master'
         run: |
           rm -rf docs
           mkdir -p docs
 
-          # Copiar histórico antigo (para mostrar "trend")
+          # Copiar histórico anterior (para gerar o "trend")
           if [ -d "old-docs/history" ]; then
-            cp -r old-docs/history results/.history
+            mkdir -p results/.history
+            cp -r old-docs/history/* results/.history/
           fi
 
-          # Gera o relatório com nome e plugin customizado
+          # Gerar relatório com plugin customizado
           allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" --plugins ./allure-plugin/custom-theme || true
 
       - name: Verificar se o relatório foi gerado
+        if: github.ref == 'refs/heads/master'
         id: check-report
         run: |
           if [ -d "docs" ] && [ "$(ls -A docs)" ]; then
-            echo "Relatório encontrado."
             echo "should_deploy=true" >> $GITHUB_OUTPUT
           else
-            echo "Relatório NÃO encontrado. Pulando deploy."
             echo "should_deploy=false" >> $GITHUB_OUTPUT
           fi
 
