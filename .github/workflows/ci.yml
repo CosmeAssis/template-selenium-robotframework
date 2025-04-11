@@ -5,11 +5,15 @@ on:
     branches:
       - '**'
   pull_request:
+    branches:
+      - '**'
 
 jobs:
   test_and_deploy:
-    # Roda apenas para push em qualquer branch ou PR originado do mesmo repositório
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    # Roda apenas em push direto OU pull_request criado do mesmo repositório
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
 
     runs-on: ubuntu-latest
 
@@ -97,5 +101,5 @@ jobs:
       - name: 🔗 Adicionar link ao summary do GitHub Actions (somente master)
         if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
         run: |
-            echo "### ✅ Relatório Allure publicado com sucesso!" >> $GITHUB_STEP_SUMMARY
-            echo "[Clique aqui para visualizar o relatório 🚀](https://cosmeassis.github.io/template-selenium-robotframework/)" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Relatório Allure publicado com sucesso!" >> $GITHUB_STEP_SUMMARY
+          echo "[📊 Acesse o relatório aqui](https://cosmeassis.github.io/template-selenium-robotframework/)" >> $GITHUB_STEP_SUMMARY
