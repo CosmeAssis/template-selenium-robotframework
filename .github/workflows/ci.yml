@@ -3,7 +3,7 @@ name: Executar Testes e Publicar Allure no GitHub Pages
 on:
   push:
     branches:
-      - master
+      - '**'
   pull_request:
     branches:
       - '**'
@@ -20,7 +20,8 @@ jobs:
       - name: Clonar o repositório
         uses: actions/checkout@v3
 
-      - name: Baixar histórico anterior do Allure (gh-pages)
+      - name: Baixar histórico anterior do Allure (apenas se for master)
+        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v3
         with:
           ref: gh-pages
@@ -40,10 +41,8 @@ jobs:
       - name: Executar testes com metadados Allure
         run: |
           mkdir -p results
-
           echo "Environment=${{ env.TEST_ENVIRONMENT }}" > results/environment.properties
           echo "Browser=${{ env.TEST_BROWSER }}" >> results/environment.properties
-
           echo '{
             "name": "GitHub Actions",
             "type": "CI",
@@ -52,7 +51,6 @@ jobs:
             "buildName": "${{ github.workflow }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }' > results/executor.json
-
           pabot --outputdir results --listener "allure_robotframework;results" tests || true
 
       - name: Instalar Allure CLI
@@ -63,33 +61,18 @@ jobs:
           sudo mv allure-2.33.0/* /opt/allure
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Gerar relatório Allure com tema customizado
+      - name: Restaurar histórico (trend) se for master
+        if: github.ref == 'refs/heads/master'
         run: |
-          rm -rf docs
-          mkdir -p docs
-
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            BRANCH_NAME="${{ github.head_ref }}"
-          else
-            BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          fi
-
-          BRANCH_NAME_CLEAN=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
-
-          if [ -d "old-docs/history" ] && [ "$BRANCH_NAME_CLEAN" == "master" ]; then
+          if [ -d "old-docs/history" ]; then
             mkdir -p results/.history
             cp -r old-docs/history/* results/.history/
           fi
 
-          allure generate results -o allure-temp --clean --report-name "Report Testes Automatizados Web" || true
-
-          if [ "$BRANCH_NAME_CLEAN" == "master" ]; then
-            mv allure-temp/* docs/
-            cp -r allure-plugin/custom-theme/* docs/ || true
-          else
-            mkdir -p docs/feat/$BRANCH_NAME_CLEAN
-            mv allure-temp/* docs/feat/$BRANCH_NAME_CLEAN/
-          fi
+      - name: Gerar relatório Allure
+        run: |
+          rm -rf docs
+          allure generate results -o docs --clean --report-name "Report Testes Automatizados Web"
 
       - name: Verificar se o relatório foi gerado
         id: check-report
@@ -100,8 +83,8 @@ jobs:
             echo "should_deploy=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publicar no GitHub Pages
-        if: steps.check-report.outputs.should_deploy == 'true'
+      - name: Publicar no GitHub Pages (somente na master)
+        if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -110,12 +93,7 @@ jobs:
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
 
-      - name: 🔗 Exibir link do relatório Allure
-        if: steps.check-report.outputs.should_deploy == 'true'
+      - name: 🔗 Exibir link do relatório (somente master)
+        if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
         run: |
-            BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/\//-/g')
-            if [ "$BRANCH_NAME" == "master" ]; then
-              echo "✅ Relatório publicado: https://cosmeassis.github.io/template-selenium-robotframework/"
-            else
-              echo "✅ Relatório publicado: https://cosmeassis.github.io/template-selenium-robotframework/feat/$BRANCH_NAME/"
-            fi
+          echo "✅ Relatório publicado: https://cosmeassis.github.io/template-selenium-robotframework/"
