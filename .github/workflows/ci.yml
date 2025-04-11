@@ -6,7 +6,7 @@ on:
       - master
   pull_request:
     branches:
-      - '**' 
+      - '**'
 
 jobs:
   test_and_deploy:
@@ -41,11 +41,9 @@ jobs:
         run: |
           mkdir -p results
 
-          # Metadados do ambiente
           echo "Environment=${{ env.TEST_ENVIRONMENT }}" > results/environment.properties
           echo "Browser=${{ env.TEST_BROWSER }}" >> results/environment.properties
 
-          # Executor
           echo '{
             "name": "GitHub Actions",
             "type": "CI",
@@ -65,27 +63,30 @@ jobs:
           sudo mv allure-2.33.0/* /opt/allure
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Gerar relatório Allure com plugin de tema customizado
+      - name: Gerar relatório Allure com tema customizado
         run: |
           rm -rf docs
           mkdir -p docs
-
           BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/\//-/g')
 
-          # Copiar histórico se branch master
           if [ -d "old-docs/history" ] && [ "$BRANCH_NAME" == "master" ]; then
             mkdir -p results/.history
             cp -r old-docs/history/* results/.history/
           fi
 
-          # Gerar o relatório
-          allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" --plugins ./allure-plugin/custom-theme || true
+          # Gerar relatório em pasta temporária
+          allure generate results -o allure-temp --clean --report-name "Report Testes Automatizados Web" || true
 
-          # Se branch for diferente de master, mover para subpasta
-          if [ "$BRANCH_NAME" != "master" ]; then
+          # Aplicar estrutura de diretório para branches diferentes
+          if [ "$BRANCH_NAME" == "master" ]; then
+            mv allure-temp/* docs/
+          else
             mkdir -p docs/feat/$BRANCH_NAME
-            mv docs/* docs/feat/$BRANCH_NAME/
+            mv allure-temp/* docs/feat/$BRANCH_NAME/
           fi
+
+          # Aplicar tema customizado (copiar arquivos extras, como CSS e JS customizados)
+          cp -r allure-plugin/custom-theme/* docs/ || true
 
       - name: Verificar se o relatório foi gerado
         id: check-report
