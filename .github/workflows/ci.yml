@@ -3,7 +3,7 @@ name: Executar Testes e Publicar Allure no GitHub Pages
 on:
   push:
     branches:
-      - '**'  # Roda para qualquer push (incluindo master)
+      - '**'  # Roda para qualquer push (inclusive master)
 
 jobs:
   test_and_deploy:
@@ -92,13 +92,13 @@ jobs:
 
       - name: 📎 Anexar relatório nativo Robot Framework (somente se não for master)
         if: github.ref != 'refs/heads/master'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-            name: Relatorio-RobotFramework
-            path: |
-              results/report.html
-              results/log.html
-              results/output.xml
+          name: Relatorio-RobotFramework
+          path: |
+            results/report.html
+            results/log.html
+            results/output.xml
 
       - name: 🔗 Adicionar link ao summary do GitHub Actions (somente master)
         if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
