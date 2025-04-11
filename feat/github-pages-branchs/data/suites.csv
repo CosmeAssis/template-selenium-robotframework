@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Testa login com credenciais válidas","5405","Teste de Login Válido","","Fri Apr 11 03:08:43 UTC 2025","failed","Fri Apr 11 03:08:49 UTC 2025","Login Test","Tests","",""
+"Testa a funcionalidade de pesquisa por produto no site","3053","Pesquisar Produto e Validar Resultados","","Fri Apr 11 03:08:43 UTC 2025","passed","Fri Apr 11 03:08:46 UTC 2025","Search Product Test","Tests","",""
+"Testa login com credenciais inválidas","5218","Teste de Login Inválido","","Fri Apr 11 03:08:49 UTC 2025","failed","Fri Apr 11 03:08:54 UTC 2025","Login Test","Tests","",""
