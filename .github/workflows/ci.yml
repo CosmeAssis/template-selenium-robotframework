@@ -3,18 +3,10 @@ name: Executar Testes e Publicar Allure no GitHub Pages
 on:
   push:
     branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
+      - '**'  # Roda para qualquer push (incluindo master)
 
 jobs:
   test_and_deploy:
-    # Roda apenas em push direto OU pull_request criado do mesmo repositório
-    if: |
-      github.event_name == 'push' || 
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
-
     runs-on: ubuntu-latest
 
     env:
