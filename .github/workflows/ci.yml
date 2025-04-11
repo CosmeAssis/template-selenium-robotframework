@@ -74,19 +74,15 @@ jobs:
             cp -r old-docs/history/* results/.history/
           fi
 
-          # Gerar relatório em pasta temporária
           allure generate results -o allure-temp --clean --report-name "Report Testes Automatizados Web" || true
 
-          # Aplicar estrutura de diretório para branches diferentes
           if [ "$BRANCH_NAME" == "master" ]; then
             mv allure-temp/* docs/
+            cp -r allure-plugin/custom-theme/* docs/ || true
           else
             mkdir -p docs/feat/$BRANCH_NAME
             mv allure-temp/* docs/feat/$BRANCH_NAME/
           fi
-
-          # Aplicar tema customizado (copiar arquivos extras, como CSS e JS customizados)
-          cp -r allure-plugin/custom-theme/* docs/ || true
 
       - name: Verificar se o relatório foi gerado
         id: check-report
@@ -106,3 +102,13 @@ jobs:
           publish_branch: gh-pages
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
+
+      - name: 🔗 Exibir link do relatório Allure
+        if: steps.check-report.outputs.should_deploy == 'true'
+        run: |
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/\//-/g')
+          if [ "$BRANCH_NAME" == "master" ]; then
+            echo "✅ Relatório publicado: https://<USUARIO>.github.io/<REPOSITORIO>/"
+          else
+            echo "✅ Relatório publicado: https://<USUARIO>.github.io/<REPOSITORIO>/feat/$BRANCH_NAME/"
+          fi
