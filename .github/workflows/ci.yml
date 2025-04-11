@@ -5,11 +5,12 @@ on:
     branches:
       - '**'
   pull_request:
-    branches:
-      - '**'
 
 jobs:
   test_and_deploy:
+    # Roda apenas para push em qualquer branch ou PR originado do mesmo repositório
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+
     runs-on: ubuntu-latest
 
     env:
@@ -93,7 +94,8 @@ jobs:
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
 
-      - name: 🔗 Exibir link do relatório (somente master)
+      - name: 🔗 Adicionar link ao summary do GitHub Actions (somente master)
         if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
         run: |
-          echo "✅ Relatório publicado: https://cosmeassis.github.io/template-selenium-robotframework/"
+            echo "### ✅ Relatório Allure publicado com sucesso!" >> $GITHUB_STEP_SUMMARY
+            echo "[Clique aqui para visualizar o relatório 🚀](https://cosmeassis.github.io/template-selenium-robotframework/)" >> $GITHUB_STEP_SUMMARY
