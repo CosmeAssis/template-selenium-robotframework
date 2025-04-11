@@ -90,6 +90,16 @@ jobs:
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
 
+      - name: 📎 Anexar relatório nativo Robot Framework (somente se não for master)
+        if: github.ref != 'refs/heads/master'
+        uses: actions/upload-artifact@v3
+        with:
+            name: Relatorio-RobotFramework
+            path: |
+              results/report.html
+              results/log.html
+              results/output.xml
+
       - name: 🔗 Adicionar link ao summary do GitHub Actions (somente master)
         if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
         run: |
