@@ -3,10 +3,7 @@ name: Executar Testes e Publicar Allure no GitHub Pages
 on:
   push:
     branches:
-      - master
-  pull_request:
-    branches:
-      - '**' 
+      - '**'  # Roda para qualquer push (inclusive master)
 
 jobs:
   test_and_deploy:
@@ -20,7 +17,7 @@ jobs:
       - name: Clonar o repositório
         uses: actions/checkout@v3
 
-      - name: Baixar histórico anterior do Allure (gh-pages)
+      - name: Baixar histórico anterior do Allure (apenas se for master)
         if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v3
         with:
@@ -41,12 +38,8 @@ jobs:
       - name: Executar testes com metadados Allure
         run: |
           mkdir -p results
-
-          # Metadados do ambiente
           echo "Environment=${{ env.TEST_ENVIRONMENT }}" > results/environment.properties
           echo "Browser=${{ env.TEST_BROWSER }}" >> results/environment.properties
-
-          # Executor
           echo '{
             "name": "GitHub Actions",
             "type": "CI",
@@ -55,7 +48,6 @@ jobs:
             "buildName": "${{ github.workflow }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }' > results/executor.json
-
           pabot --outputdir results --listener "allure_robotframework;results" tests || true
 
       - name: Instalar Allure CLI
@@ -66,23 +58,20 @@ jobs:
           sudo mv allure-2.33.0/* /opt/allure
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Gerar relatório Allure com plugin de tema customizado
+      - name: Restaurar histórico (trend) se for master
         if: github.ref == 'refs/heads/master'
         run: |
-          rm -rf docs
-          mkdir -p docs
-
-          # Copiar histórico anterior (para gerar o "trend")
           if [ -d "old-docs/history" ]; then
             mkdir -p results/.history
             cp -r old-docs/history/* results/.history/
           fi
 
-          # Gerar relatório com plugin customizado
-          allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" --plugins ./allure-plugin/custom-theme || true
+      - name: Gerar relatório Allure
+        run: |
+          rm -rf docs
+          allure generate results -o docs --clean --report-name "Report Testes Automatizados Web"
 
       - name: Verificar se o relatório foi gerado
-        if: github.ref == 'refs/heads/master'
         id: check-report
         run: |
           if [ -d "docs" ] && [ "$(ls -A docs)" ]; then
@@ -91,8 +80,8 @@ jobs:
             echo "should_deploy=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publicar no GitHub Pages
-        if: steps.check-report.outputs.should_deploy == 'true'
+      - name: Publicar no GitHub Pages (somente na master)
+        if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -100,3 +89,19 @@ jobs:
           publish_branch: gh-pages
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
+
+      - name: 📎 Anexar relatório nativo Robot Framework (somente se não for master)
+        if: github.ref != 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Relatorio-RobotFramework
+          path: |
+            results/report.html
+            results/log.html
+            results/output.xml
+
+      - name: 🔗 Adicionar link ao summary do GitHub Actions (somente master)
+        if: github.ref == 'refs/heads/master' && steps.check-report.outputs.should_deploy == 'true'
+        run: |
+          echo "### ✅ Relatório Allure publicado com sucesso!" >> $GITHUB_STEP_SUMMARY
+          echo "[📊 Acesse o relatório aqui](https://cosmeassis.github.io/template-selenium-robotframework/)" >> $GITHUB_STEP_SUMMARY
