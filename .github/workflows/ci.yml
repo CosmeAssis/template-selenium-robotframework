@@ -21,7 +21,6 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Baixar histórico anterior do Allure (gh-pages)
-        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v3
         with:
           ref: gh-pages
@@ -67,22 +66,28 @@ jobs:
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
       - name: Gerar relatório Allure com plugin de tema customizado
-        if: github.ref == 'refs/heads/master'
         run: |
           rm -rf docs
           mkdir -p docs
 
-          # Copiar histórico anterior (para gerar o "trend")
-          if [ -d "old-docs/history" ]; then
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | sed 's/\//-/g')
+
+          # Copiar histórico se branch master
+          if [ -d "old-docs/history" ] && [ "$BRANCH_NAME" == "master" ]; then
             mkdir -p results/.history
             cp -r old-docs/history/* results/.history/
           fi
 
-          # Gerar relatório com plugin customizado
+          # Gerar o relatório
           allure generate results -o docs --clean --report-name "Report Testes Automatizados Web" --plugins ./allure-plugin/custom-theme || true
 
+          # Se branch for diferente de master, mover para subpasta
+          if [ "$BRANCH_NAME" != "master" ]; then
+            mkdir -p docs/feat/$BRANCH_NAME
+            mv docs/* docs/feat/$BRANCH_NAME/
+          fi
+
       - name: Verificar se o relatório foi gerado
-        if: github.ref == 'refs/heads/master'
         id: check-report
         run: |
           if [ -d "docs" ] && [ "$(ls -A docs)" ]; then
