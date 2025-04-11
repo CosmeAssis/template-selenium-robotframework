@@ -1,0 +1,8 @@
+<plugin>
+  <id>custom-theme</id>
+  <name>Custom Allure Theme</name>
+  <description>Estilo customizado para o Allure Report</description>
+  <extensions>
+    <static>static</static>
+  </extensions>
+</plugin>
